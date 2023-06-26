@@ -40,6 +40,11 @@ class CreditmemoBuilder
      */
     private $orderItems;
 
+    /**
+     * @var bool[]
+     */
+    private $backToStockOrderItems;
+
     final public function __construct(
         CreditmemoItemCreationInterfaceFactory $itemFactory,
         RefundOrderInterface $refundOrder,
@@ -67,11 +72,12 @@ class CreditmemoBuilder
         );
     }
 
-    public function withItem(int $orderItemId, int $qty): CreditmemoBuilder
+    public function withItem(int $orderItemId, int $qty, bool $backToStock = false): CreditmemoBuilder
     {
         $builder = clone $this;
 
         $builder->orderItems[$orderItemId] = $qty;
+        $builder->backToStockOrderItems[$orderItemId] = $backToStock;
 
         return $builder;
     }
@@ -107,6 +113,9 @@ class CreditmemoBuilder
             $creditmemoItem = $this->itemFactory->create();
             $creditmemoItem->setOrderItemId($orderItemId);
             $creditmemoItem->setQty($qty);
+            if (isset($this->backToStockOrderItems[$orderItemId]) && $this->backToStockOrderItems[$orderItemId]) {
+                $creditmemoItem->setBackToStock(true);
+            }
             $creditmemoItems[] = $creditmemoItem;
         }
         return $creditmemoItems;
